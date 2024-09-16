@@ -1,0 +1,64 @@
+{
+    "DataBase": {
+        "Name": "SQLLite",
+        "DBFile": "./sct.db"
+    },
+    "ListenTo": [
+        {
+            "Port": 62345,
+            "SendingFacility": "AUXXREFDEMO",
+            "ReceivingFacility": "DIDGUGO"
+        },
+        {
+            "Port": 62346,
+            "SendingFacility": "AUXXREFSCR",
+            "ReceivingFacility": "DIDGUGO"
+        }
+    ],
+    "Schedulers": [
+        {
+            "Name": "Scheduler 1",
+            "PythonFilePath": "./scheduler1.py",
+            "interval": 60
+        },
+        {
+            "Name": "Scheduler 2",
+            "PythonFilePath": "./scheduler2.py",
+            "interval": 300
+        },
+        {
+            "Name": "Scheduler 3",
+            "PythonFilePath": "./scheduler3.py",
+            "interval": 300
+        }
+    ],
+    "RESTDestination": {
+        "Hostname": "",
+        "Port": "",
+        "BasePath": "",
+        "Methods": {
+            "PostContent": {
+                "Method": "POST",
+                "Path": ""
+            },
+            "GetContents": {
+                "Method": "GET",
+                "Path": ""
+            },
+            "PostContents": {
+                "Method": "POST",
+                "Path": ""
+            }
+        }
+    },
+    "RESTService": {
+        "Methods": {
+            "GetContents": {
+                "Number": 20
+            },
+            "PostContents": {
+                "Number": 20
+            }
+        }
+    }
+}
