@@ -1,6 +1,5 @@
 import enum
 from typing import List, Optional
-import sys
 from datetime import datetime
 from sqlalchemy import create_engine, String, Text, DateTime, Enum
 from sqlalchemy.orm import Session, DeclarativeBase, Mapped, mapped_column, relationship
@@ -30,8 +29,8 @@ class MessageQueue(Base):
     sending_facility: Mapped[str] = mapped_column(String(100), nullable=False)
     receiving_facility: Mapped[str] = mapped_column(String(100), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
-    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
-    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now(), onupdate=func.now, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=datetime.now, onupdate=datetime.now, nullable=False)
     delivered_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=True)
     status: Mapped[Status] = mapped_column(Enum(Status), nullable=False)
 
@@ -45,10 +44,41 @@ functions
 def createTables():
     Base.metadata.create_all(engine)
 
+# function to insert a new message
+# Parameters:
+#   1. sending_facility - str
+#   2. receiving_facility - str
+#   3. content - str: A JSON string that containing 3 fields e.g., {"sending_facility":"AUXXREFSCR", "receiving_facility": "DIDGUGO", "content":"XXXX"}
+#   4. status - str: One of the following: PENDING, RETRY, DELIVERED, RECEIVED, COMPLETED
 def insertMessage(sending_facility, receiving_facility, content, status):
-    new_message = MessageQueue(sending_facility=sending_facility, receiving_facility=receiving_facility, content=content, status=status)
-    session = Session(engine)
-    session.add(new_message)
-    session.flush()
-    session.commit()
-    session.close()
+    try:
+        new_message = MessageQueue(sending_facility=sending_facility, receiving_facility=receiving_facility, content=content, status=status)
+        session = Session(engine)
+        session.add(new_message)
+        session.flush()
+        session.commit()
+    except Exception as error:
+        print("An exception occured: ", error)
+    finally:
+        session.close()
+
+# function to update a message based on the id
+# Parameters:
+#   1. id - int: row id
+#   2. changes - dict: a dictionary containing all the changed columns, each pair of the key-value pairs is a pair of column name and changed value of the column
+def updateMessage(id: int, changes: dict):
+    try:
+        session = Session(engine)
+        message = session.get(MessageQueue, id)
+        if not message:
+            raise Exception(f"The row id {id} does not exist in the table message_queue")
+        
+        for column_name, column_value in changes.items():
+            setattr(message, column_name, column_value)
+
+        session.flush()
+        session.commit()
+    except Exception as error:
+        print("An exception occured: ", error)
+    finally:
+        session.close()
