@@ -82,3 +82,22 @@ def updateMessage(id: int, changes: dict):
         print("An exception occured: ", error)
     finally:
         session.close()
+
+# function to delete a message based on the id
+# Parameters:
+#   1. id - int: row id 
+def deleteMessage(id: int):
+    try:
+        session = Session(engine)
+        message = session.get(MessageQueue, id)
+        if not message:
+            raise Exception(f"The row id {id} does not exist in the table message_queue")
+        
+        session.delete(message)
+
+        session.flush()
+        session.commit()
+    except Exception as error:
+        print("An exception occured: ", error)
+    finally:
+        session.close()
