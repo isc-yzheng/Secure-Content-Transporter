@@ -15,9 +15,9 @@ def process_message(message, sendingfacility, receivingfacility):
 
     # Create a JSON object with the parameters
     content = json.dumps({
-        'message': message,
-        'sendingFacility': sendingfacility,
-        'receivingFacility': receivingfacility
+        'content': message,
+        'sending_facility': sendingfacility,
+        'receiving_facility': receivingfacility
     })
     # Encode content to Base64
     encoded_content = base64.b64encode(content.encode()).decode()
