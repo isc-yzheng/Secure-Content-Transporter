@@ -12,15 +12,18 @@ from models import insertMessage  # Import the insertMessage function
 db_path = "sct.db" 
 
 def process_message(message, sendingfacility, receivingfacility):
-    # Parse the incoming JSON message
 
-    content = message
+    # Create a JSON object with the parameters
+    content = json.dumps({
+        'message': message,
+        'sendingFacility': sendingfacility,
+        'receivingFacility': receivingfacility
+    })
     # Encode content to Base64
     encoded_content = base64.b64encode(content.encode()).decode()
        
     # Insert message into the database with PENDING status
     insertMessage(sendingfacility, receivingfacility, encoded_content, 'PENDING')
-
 
 def handle_client(connection, address, sendingfacility, receivingfacility):
     with connection:
