@@ -1,7 +1,7 @@
 import enum
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
-from sqlalchemy import create_engine, String, Text, DateTime, Enum
+from sqlalchemy import create_engine, String, Text, DateTime, Enum, select
 from sqlalchemy.orm import Session, DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
 
@@ -101,3 +101,35 @@ def deleteMessage(id: int):
         print("An exception occured: ", error)
     finally:
         session.close()
+
+# fuction to query the top 1 message in ascending order of created_at with a status not equal to "DELIVERED" or "COMPLETED"
+def dequeueMessage() -> Optional[Dict[str, any]]:
+    try:
+        session = Session(engine)
+
+        # Create a select statement for the top message based on conditions
+        stmt = (select(MessageQueue)
+                .where(MessageQueue.status.notin_([Status.COMPLETED, Status.DELIVERED]))
+                .order_by(MessageQueue.created_at.asc())
+                .limit(1)) # Limit to the first result
+        # Execute the statement
+        message = session.scalars(stmt).first()
+
+        if message:
+            # Convert the message object to a dictionary
+            return {
+                "id": message.id,
+                "sending_facility": message.sending_facility,
+                "receiving_facility": message.receiving_facility,
+                "content": message.content,
+                "created_at": message.created_at,
+                "updated_at": message.updated_at,
+                "delivered_at": message.delivered_at,
+                "status": message.status.name
+            }
+        # Return None if no message is found
+        return None
+    except Exception as error:
+        print("An exception occurred: ", error)
+    finally:
+        session.close() # This will always execute

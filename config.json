@@ -15,6 +15,10 @@
             "ReceivingFacility": "DIDGUGO"
         }
     ],
+    "SendBack": {
+        "AUXXREFDEMO" : 63123,
+        "AUXXREFSCR" : 63124
+    },
     "Schedulers": [
         {
             "Name": "Scheduler 1",
@@ -33,13 +37,14 @@
         }
     ],
     "RESTDestination": {
-        "Hostname": "",
+        "Protocol": "https",
+        "Hostname": "reqres.in",
         "Port": "",
-        "BasePath": "",
+        "BasePath": "/api",
         "Methods": {
             "PostContent": {
                 "Method": "POST",
-                "Path": ""
+                "Path": "/users"
             },
             "GetContents": {
                 "Method": "GET",
