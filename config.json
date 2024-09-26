@@ -48,7 +48,7 @@
             },
             "GetContents": {
                 "Method": "GET",
-                "Path": ""
+                "Path": "/users"
             },
             "PostContents": {
                 "Method": "POST",

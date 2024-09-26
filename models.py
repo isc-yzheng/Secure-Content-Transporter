@@ -129,7 +129,49 @@ def dequeueMessage() -> Optional[Dict[str, any]]:
             }
         # Return None if no message is found
         return None
+    
     except Exception as error:
         print("An exception occurred: ", error)
+        return None
+    
     finally:
         session.close() # This will always execute
+
+# Function to query top <numOfMessages> messages that is in PENDING or RETRY status order by created_at
+def getUnprocessedMessages(numOfMessages: int) -> List[Dict]:
+    try:
+        session = Session(engine)
+
+        # Select the top <numOfMessages> rows where status is PENDING or RETRY, ordered by created_at
+        stmt = (
+            select(MessageQueue)
+            .where(MessageQueue.status.in_([Status.PENDING, Status.RETRY]))
+            .order_by(MessageQueue.created_at.asc())
+            .limit(numOfMessages)
+        )
+        
+        # Execute the query and fetch the result
+        messages = session.scalars(stmt).all()
+        
+        # Convert the result into a list of dictionaries
+        result = []
+        for message in messages:
+            result.append({
+                'id': message.id,
+                'sending_facility': message.sending_facility,
+                'receiving_facility': message.receiving_facility,
+                'content': message.content,
+                'created_at': message.created_at,
+                'updated_at': message.updated_at,
+                'delivered_at': message.delivered_at,
+                'status': message.status.name  # convert enum to string
+            })
+        
+        return result
+
+    except Exception as error:
+        print(f"An exception occurred: {error}")
+        return []
+    
+    finally:
+        session.close()
