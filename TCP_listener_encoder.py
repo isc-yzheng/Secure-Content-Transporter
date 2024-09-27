@@ -1,9 +1,6 @@
 import json
 import socket
-import requests
-import sqlite3
 import base64
-from datetime import datetime
 import threading
 
 from models import insertMessage  # Import the insertMessage function
