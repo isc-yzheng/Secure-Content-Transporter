@@ -56,7 +56,7 @@ def post_content():
         return jsonify({"status": "Fail", "error": "Missing parameters"}), 400
 
     # Insert message using the function from your module
-    insertMessage(sending_facility, receiving_facility, content, status="PENDING")
+    insertMessage(sending_facility, receiving_facility, content, status="RECEIVED")
 
     return jsonify({"status": "Success"}), 201
 
