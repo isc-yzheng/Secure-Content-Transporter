@@ -13,17 +13,18 @@ db_path = "sct.db"
 
 def process_message(message, sendingfacility, receivingfacility):
 
+    # Encode content to Base64
+    encoded_message = base64.b64encode(message.encode()).decode()
+
     # Create a JSON object with the parameters
     content = json.dumps({
-        'content': message,
+        'content': encoded_message,
         'sending_facility': sendingfacility,
         'receiving_facility': receivingfacility
     })
-    # Encode content to Base64
-    encoded_content = base64.b64encode(content.encode()).decode()
        
     # Insert message into the database with PENDING status
-    insertMessage(sendingfacility, receivingfacility, encoded_content, 'PENDING')
+    insertMessage(sendingfacility, receivingfacility, content, 'PENDING')
 
 def handle_client(connection, address, sendingfacility, receivingfacility):
     with connection:
