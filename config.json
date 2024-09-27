@@ -13,6 +13,11 @@
             "Port": 62346,
             "SendingFacility": "AUXXREFSCR",
             "ReceivingFacility": "DIDGUGO"
+        },
+        {
+            "Port": 62347,
+            "SendingFacility": "MZREF",
+            "ReceivingFacility": "DIDGUGO"
         }
     ],
     "SendBack": {
