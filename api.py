@@ -1,14 +1,8 @@
 import json
 from flask import Flask, request, jsonify
-from flask_sqlalchemy import SQLAlchemy
 from models import insertMessage, getUnprocessedMessages, updateMessage
 
 app = Flask(__name__)
-
-# Configure the existing SQLite database
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///sct.db'  # Adjust the path as needed
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-db = SQLAlchemy(app)
 
 # Configuration for the number of messages to fetch
 NUM_OF_MESSAGES = 5  # Adjust this value based on your config
