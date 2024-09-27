@@ -42,14 +42,14 @@
         }
     ],
     "RESTDestination": {
-        "Protocol": "https",
-        "Hostname": "reqres.in",
-        "Port": "",
-        "BasePath": "/api",
+        "Protocol": "http",
+        "Hostname": "52.65.140.187",
+        "Port": "5000",
+        "BasePath": "",
         "Methods": {
             "PostContent": {
                 "Method": "POST",
-                "Path": "/users"
+                "Path": "/postcontent"
             },
             "GetContents": {
                 "Method": "GET",
