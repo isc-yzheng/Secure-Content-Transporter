@@ -102,14 +102,14 @@ def deleteMessage(id: int):
     finally:
         session.close()
 
-# fuction to query the top 1 message in ascending order of created_at with a status not equal to "DELIVERED" or "COMPLETED"
-def dequeueMessage() -> Optional[Dict[str, any]]:
+# fuction to query the top 1 message in ascending order of created_at with a status equal to "PENDING" or "RETRY"
+def dequeueMessage(target_status: List[Status]) -> Optional[Dict[str, any]]:
     try:
         session = Session(engine)
 
         # Create a select statement for the top message based on conditions
         stmt = (select(MessageQueue)
-                .where(MessageQueue.status.notin_([Status.COMPLETED, Status.DELIVERED]))
+                .where(MessageQueue.status.in_(target_status))
                 .order_by(MessageQueue.created_at.asc())
                 .limit(1)) # Limit to the first result
         # Execute the statement
