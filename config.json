@@ -45,7 +45,7 @@
     },
     "RESTDestination": {
         "Protocol": "http",
-        "Hostname": "54.79.115.146",
+        "Hostname": "54.252.254.46",
         "Port": "5000",
         "BasePath": "",
         "Methods": {
