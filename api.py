@@ -21,10 +21,18 @@ def get_contents():
 def post_contents():
     data = request.json
 
+    # Check if the 'messages' key exists and is a list
+    messages = data.get('messages')
+
     if not isinstance(data, list):
         return jsonify({"status": "Fail", "error": "Payload must be an array of messages"}), 400
 
-    for item in data:
+    # Optional: Validate 'size' key
+    size = data.get('size')
+    if size is not None and not isinstance(size, int):
+        return jsonify({"status": "Fail", "error": "'size' must be an integer"}), 400
+
+    for item in messages:
         sending_facility = item.get('sending_facility')
         receiving_facility = item.get('receiving_facility')
         content = item.get('content')
@@ -38,21 +46,6 @@ def post_contents():
 
     return jsonify({"status": "Success"}), 201
 
-@app.route('/postcontent', methods=['POST'])
-def post_content():
-    data = request.json
-    sending_facility = data.get('sending_facility')
-    receiving_facility = data.get('receiving_facility')
-    content = data.get('content')
-
-    # Validate input
-    if not all([sending_facility, receiving_facility, content]):
-        return jsonify({"status": "Fail", "error": "Missing parameters"}), 400
-
-    # Insert message using the function from your module
-    insertMessage(sending_facility, receiving_facility, content, status="RECEIVED")
-
-    return jsonify({"status": "Success"}), 201
-
 
 app.run(host='0.0.0.0', port=5000)
+
