@@ -1,13 +1,15 @@
 import json
 from flask import Flask, request, jsonify
 from models import insertMessage, getUnprocessedMessages, updateMessage
+from utils import load_config
 
 app = Flask(__name__)
 
+config = load_config()
 # Configuration for the number of messages to fetch
-NUM_OF_MESSAGES = 5  # Adjust this value based on your config
+NUM_OF_MESSAGES = config['RESTService']['Methods']['GetContents']['Number']  # number of messages from config file
 
-@app.route('/getcontents', methods=['POST'])
+@app.route('/getcontents', methods=['GET'])
 def get_contents():
     messages = getUnprocessedMessages(NUM_OF_MESSAGES)
 
@@ -23,9 +25,6 @@ def post_contents():
 
     # Check if the 'messages' key exists and is a list
     messages = data.get('messages')
-
-    if not isinstance(data, list):
-        return jsonify({"status": "Fail", "error": "Payload must be an array of messages"}), 400
 
     # Optional: Validate 'size' key
     size = data.get('size')

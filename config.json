@@ -43,13 +43,13 @@
     ],
     "RESTDestination": {
         "Protocol": "http",
-        "Hostname": "52.65.140.187",
+        "Hostname": "54.252.254.46",
         "Port": "5000",
         "BasePath": "",
         "Methods": {
             "GetContents": {
                 "Method": "GET",
-                "Path": "/getcontent"
+                "Path": "/getcontents"
             },
             "PostContents": {
                 "Method": "POST",
