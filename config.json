@@ -47,17 +47,13 @@
         "Port": "5000",
         "BasePath": "",
         "Methods": {
-            "PostContent": {
-                "Method": "POST",
-                "Path": "/postcontent"
-            },
             "GetContents": {
                 "Method": "GET",
-                "Path": "/users"
+                "Path": "/getcontent"
             },
             "PostContents": {
                 "Method": "POST",
-                "Path": ""
+                "Path": "/postcontents"
             }
         }
     },

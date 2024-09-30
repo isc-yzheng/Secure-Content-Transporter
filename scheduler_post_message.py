@@ -37,13 +37,24 @@ def check_queued_message():
 # Send the content from message to the target REST API using the postContent method
 def post_message(message, config):
     # Construct the URL from the config
-    url = construct_url(config, "PostContent")
+    url = construct_url(config, "PostContents")
     if not url:
         print("URL construction failed, skipping task...")
         return
     
     # Extract content from the dequeue message dict (it's expected to be a JSON string)
-    json_string = message["content"]
+    # Extract content and transform it into a Python dict
+    try:
+        message_content = json.loads(message['content'])
+        request_json = {
+            "messages": [
+                message_content
+            ],
+            "size": 1
+        }
+    except json.JSONDecodeError as error:
+        print(f"Failed to parse content for message id {message['id']}: {error}")
+        return
     
     headers = {
         'Content-Type': 'application/json' # Specify content type as JSON
@@ -51,7 +62,7 @@ def post_message(message, config):
 
     try:
         # Send HTTP POST request with raw JSON string
-        response = requests.post(url, data=json_string, headers=headers)
+        response = requests.post(url, json=request_json, headers=headers)
 
         # Parse the JSON response
         response_data = response.json()
