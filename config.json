@@ -1,7 +1,8 @@
 {
     "DataBase": {
         "Name": "SQLLite",
-        "DBFile": "./sct.db"
+        "DBFile": "sct.db",
+        "Debug": false
     },
     "ListenTo": [
         {
@@ -24,26 +25,27 @@
         "AUXXREFDEMO" : 63123,
         "AUXXREFSCR" : 63124
     },
-    "Schedulers": [
-        {
-            "Name": "Scheduler 1",
-            "PythonFilePath": "./scheduler1.py",
-            "interval": 60
+    "Schedulers": {
+        "PostMessage" : {
+            "PythonFilePath": "./scheduler_post_message.py",
+            "interval": 5
         },
-        {
-            "Name": "Scheduler 2",
-            "PythonFilePath": "./scheduler2.py",
-            "interval": 300
+        "PullMessages" : {
+            "PythonFilePath": "./scheduler_pull_messages.py",
+            "interval": 20
         },
-        {
-            "Name": "Scheduler 3",
-            "PythonFilePath": "./scheduler3.py",
-            "interval": 300
+        "ReceiveMessage" : {
+            "PythonFilePath": "./scheduler_receive_message.py",
+            "interval": 5
+        },
+        "PushMessages" : {
+            "PythonFilePath": "./scheduler_push_messages.py",
+            "interval": 20
         }
-    ],
+    },
     "RESTDestination": {
         "Protocol": "http",
-        "Hostname": "54.252.254.46",
+        "Hostname": "54.79.115.146",
         "Port": "5000",
         "BasePath": "",
         "Methods": {

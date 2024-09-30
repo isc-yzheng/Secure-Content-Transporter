@@ -4,19 +4,22 @@ from utils import load_config, construct_url
 import requests
 from models import getUnprocessedMessages, updateMessage, Status
 import json
+import sys
 
 # Create a scheduler instance
 scheduler = sched.scheduler(time.time, time.sleep)
 
+# Load config.json
+config = load_config()
+if not config:
+    print("Failed to load configuration file, Shuting down the scheduler...")
+    sys.exit(0)
+
+SCHEDULER_INTERVAL = config["Schedulers"]["PushMessages"]["interval"]
+
 # Define the task to run
 def push_messages():
     print("Pushing Messages...")
-
-    # Load configuration
-    config = load_config()
-    if not config:
-        print("Configuration error, skipping task...")
-        return
     
     # Get the number of messages to fetch from the updated config
     num_of_messages = config.get("RESTService", {}).get("Methods", {}).get("PostContents", {}).get("Number", 1)
@@ -40,11 +43,15 @@ def push_messages():
     }
 
     # Prepare the request body, which is a list of "content" fields from each message
-    request_body = [json.loads(message['content']) for message in messages]
+    message_contents = [json.loads(message['content']) for message in messages]
+    request_json = {
+        "messages": message_contents,
+        "size": len(message_contents)
+    }
     
     try:
         # Send HTTP POST request with the list of content fields
-        response = requests.post(url, json=request_body, headers=headers)
+        response = requests.post(url, json=request_json, headers=headers)
 
         # Parse the JSON response
         response_data = response.json()
@@ -65,13 +72,13 @@ def push_messages():
         print("An error occurred while pushing messages:", error)
 
 def repeat_task():
-    scheduler.enter(5, 1, push_messages, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, push_messages, ())
     # Reschedule the task again
-    scheduler.enter(5, 1, repeat_task, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, repeat_task, ())
 
 # Schedule the first task to run after 5 minutes
 repeat_task()
 
 # Start the scheduler
-print("Scheduler started...")
+print(f"Scheduler started, runs every {SCHEDULER_INTERVAL} seconds...\n")
 scheduler.run()

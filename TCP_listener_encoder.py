@@ -23,6 +23,7 @@ def process_message(message, sendingfacility, receivingfacility):
        
     # Insert message into the database with PENDING status
     insertMessage(sendingfacility, receivingfacility, content, 'PENDING')
+    print(f"Message inserted from {sendingfacility}!")
 
 def handle_client(connection, address, sendingfacility, receivingfacility):
     with connection:

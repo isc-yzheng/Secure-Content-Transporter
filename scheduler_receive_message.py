@@ -7,18 +7,23 @@ from datetime import datetime
 import socket
 import json
 import base64
-
+import sys
 
 # Create a scheduler instance
 scheduler = sched.scheduler(time.time, time.sleep)
 
+# Load config.json
+config = load_config()
+if not config:
+    print("Failed to load configuration file, Shuting down the scheduler...")
+    sys.exit(0)
+
+SCHEDULER_INTERVAL = config["Schedulers"]["ReceiveMessage"]["interval"]
+
 # Task to run: Dequeue top message in ascending order of created_at with status not "DELIVERED" or "COMPLETED"
 def check_received_message():
-    config = load_config()
-    if not config:
-        print("Configuration error, skipping task...")
-        return
-    
+    print("Checking Received Message...")
+
     # Getting JSON content from the message queue
     message = dequeueMessage([Status.RECEIVED])
     if not message:
@@ -88,13 +93,13 @@ def send_to_TCP(message, config):
 
 def repeat_task():
     # schedule check_queued_message
-    scheduler.enter(5, 1, check_received_message, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, check_received_message, ())
     # Reschedule the repeat_task
-    scheduler.enter(5, 1, repeat_task, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, repeat_task, ())
 
 # Schedule the first task to run
 repeat_task()
 
 # Start the scheduler
-print("Scheduler started...\n")
+print(f"Scheduler started, runs every {SCHEDULER_INTERVAL} seconds...\n")
 scheduler.run()

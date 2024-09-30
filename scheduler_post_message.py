@@ -4,21 +4,25 @@ import requests
 from utils import load_config, construct_url
 from models import updateMessage, dequeueMessage, Status
 from datetime import datetime
-import socket
 import json
-import base64
+import sys
 
 
 # Create a scheduler instance
 scheduler = sched.scheduler(time.time, time.sleep)
 
+# Load config.json
+config = load_config()
+if not config:
+    print("Failed to load configuration file, Shuting down the scheduler...")
+    sys.exit(0)
+
+SCHEDULER_INTERVAL = config["Schedulers"]["PostMessage"]["interval"]
+
 # Task to run: Dequeue top message in ascending order of created_at with status not "DELIVERED" or "COMPLETED"
 def check_queued_message():
-    config = load_config()
-    if not config:
-        print("Configuration error, skipping task...")
-        return
-    
+    print("Dequeueing and Posting Message...")
+
     # Getting JSON content from the message queue
     message = dequeueMessage([Status.PENDING, Status.RETRY])
     if not message:
@@ -30,12 +34,12 @@ def check_queued_message():
 
     if status in [Status.PENDING, Status.RETRY]:
         # Send the message to the target postContent REST endpoint
-        post_message(message, config)
+        post_message(message)
     else:
         print(f"Unhandled message status: {status}")
 
 # Send the content from message to the target REST API using the postContent method
-def post_message(message, config):
+def post_message(message):
     # Construct the URL from the config
     url = construct_url(config, "PostContents")
     if not url:
@@ -87,13 +91,13 @@ def post_message(message, config):
 
 def repeat_task():
     # schedule check_queued_message
-    scheduler.enter(5, 1, check_queued_message, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, check_queued_message, ())
     # Reschedule the repeat_task
-    scheduler.enter(5, 1, repeat_task, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, repeat_task, ())
 
 # Schedule the first task to run
 repeat_task()
 
 # Start the scheduler
-print("Scheduler started...\n")
+print(f"Scheduler started, runs every {SCHEDULER_INTERVAL} seconds...\n")
 scheduler.run()

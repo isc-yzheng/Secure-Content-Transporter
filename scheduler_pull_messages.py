@@ -3,19 +3,22 @@ import time
 from utils import load_config, construct_url
 import requests
 from models import insertMessage, Status
+import sys
 
 # Create a scheduler instance
 scheduler = sched.scheduler(time.time, time.sleep)
 
+# Load config.json
+config = load_config()
+if not config:
+    print("Failed to load configuration file, Shuting down the scheduler...")
+    sys.exit(0)
+
+SCHEDULER_INTERVAL = config["Schedulers"]["PullMessages"]["interval"]
+
 # Define the task to run
 def pull_messages():
     print("Pulling Messages...")
-
-    # Load configuration
-    config = load_config()
-    if not config:
-        print("Configuration error, skipping task...")
-        return
     
     # Construct the URL for the GET request for GetContents endpoint
     url = construct_url(config, "GetContents")
@@ -50,13 +53,13 @@ def pull_messages():
         print(f"An error occurred while pulling messages: {error}")
 
 def repeat_task():
-    scheduler.enter(5, 1, pull_messages, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, pull_messages, ())
     # Reschedule the task again
-    scheduler.enter(5, 1, repeat_task, ())
+    scheduler.enter(SCHEDULER_INTERVAL, 1, repeat_task, ())
 
 # Schedule the first task to run after 5 minutes
 repeat_task()
 
 # Start the scheduler
-print("Scheduler started...")
+print(f"Scheduler started, runs every {SCHEDULER_INTERVAL} seconds...\n")
 scheduler.run()

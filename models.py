@@ -4,6 +4,7 @@ from datetime import datetime
 from sqlalchemy import create_engine, String, Text, DateTime, Enum, select
 from sqlalchemy.orm import Session, DeclarativeBase, Mapped, mapped_column, relationship
 from sqlalchemy.sql import func
+from utils import load_config
 
 """
 definitions and variables
@@ -16,7 +17,8 @@ class Status(enum.Enum):
     RECEIVED = 4
     COMPLETED = 5
     
-engine = create_engine("sqlite+pysqlite:///sct.db", echo=True)
+config = load_config()
+engine = create_engine("sqlite+pysqlite:///" + config['DataBase']['DBFile'], echo=config['DataBase']['Debug'])
 
 class Base(DeclarativeBase):
     pass
