@@ -51,7 +51,7 @@ def post_message(message):
     try:
         message_content = json.loads(message['content'])
         request_json = {
-            "messages": [
+            "contents": [
                 message_content
             ],
             "size": 1

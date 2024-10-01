@@ -36,7 +36,7 @@ def pull_messages():
         response_data = response.json()
 
         if response.status_code == 200:
-            messages = response_data.get("messages", [])
+            messages = response_data.get("contents", [])
             for message in messages:
                 sending_facility = message["sending_facility"]
                 receiving_facility = message["receiving_facility"]

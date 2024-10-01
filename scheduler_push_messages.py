@@ -45,7 +45,7 @@ def push_messages():
     # Prepare the request body, which is a list of "content" fields from each message
     message_contents = [json.loads(message['content']) for message in messages]
     request_json = {
-        "messages": message_contents,
+        "contents": message_contents,
         "size": len(message_contents)
     }
     

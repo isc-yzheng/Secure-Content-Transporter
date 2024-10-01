@@ -17,14 +17,14 @@ def get_contents():
     for message in messages:
         updateMessage(message['id'], {'status': 'DELIVERED'})  # Update the status in the DB
 
-    return jsonify({"messages": messages, "size": len(messages)}), 200
+    return jsonify({"contents": messages, "size": len(messages)}), 200
 
 @app.route('/postcontents', methods=['POST'])
 def post_contents():
     data = request.json
 
-    # Check if the 'messages' key exists and is a list
-    messages = data.get('messages')
+    # Check if the 'contents' key exists and is a list
+    messages = data.get('contents')
 
     # Optional: Validate 'size' key
     size = data.get('size')
