@@ -68,5 +68,6 @@
                 "Number": 20
             }
         }
-    }
+    },
+    "MessageType": "HL7"
 }

@@ -26,16 +26,47 @@ def process_message(message, sendingfacility, receivingfacility):
     print(f"Message inserted from {sendingfacility}!")
 
 def handle_client(connection, address, sendingfacility, receivingfacility):
+    buffer = ""
     with connection:
         print(f"Client connected from {address}")
         while True:
-            data = connection.recv(1024)
+            data = connection.recv(1024).decode()
             if not data:
                 break
 
-            message = data.decode()
-            process_message(message, sendingfacility, receivingfacility)
-            connection.sendall(data)  # Echo the data back
+            # Append the incoming data to the buffer
+            buffer += data
+
+            # Access message type directly from the global config
+            message_type = config.get('MessageType', 'generic')
+
+            if message_type == "HL7":
+                # Check if we have a complete message (framed by \x0b and \x1c\r)
+                while '\x0b' in buffer and '\x1c\r' in buffer:
+                    # Find the start and end framing characters
+                    start_idx = buffer.find('\x0b')  # Include \x0b in the message
+                    end_idx = buffer.find('\x1c\r') + 2  # Include \x1c\r in the message
+
+                    # Extract the complete message including the framing characters
+                    complete_message = buffer[start_idx:end_idx]
+
+                    # Process the complete message
+                    process_message(complete_message, sendingfacility, receivingfacility)
+
+                    # Send ACK back after processing the complete message
+                    connection.sendall(complete_message.encode())
+
+                    # Remove the processed message from the buffer
+                    buffer = buffer[end_idx:]  # Keep any remaining data in the buffer
+            else:
+                # Generic message processing
+                process_message(buffer, sendingfacility, receivingfacility)
+
+                # Send ACK for the entire buffer
+                connection.sendall(buffer.encode())
+
+                # Clear the buffer after processing
+                buffer = ""
 
 def listen_on_port(port, sendingfacility, receivingfacility):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as server_socket:

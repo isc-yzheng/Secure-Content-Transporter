@@ -88,6 +88,9 @@ def send_to_TCP(message, config):
             response = s.recv(1024).decode('utf-8')
             print(f"Response from TCP server: {response}")
 
+            if response:
+                updateMessage(message['id'], {"status":Status.COMPLETED.name})
+
     except Exception as e:
         print(f"An error occurred while sending TCP message: {e}")
 
