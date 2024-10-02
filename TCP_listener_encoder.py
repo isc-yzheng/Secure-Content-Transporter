@@ -4,8 +4,8 @@ import base64
 import threading
 import signal
 import sys
+import uuid
 from utils import load_config
-
 from models import insertMessage  # Import the insertMessage function
 
 
@@ -14,15 +14,19 @@ def process_message(message, sendingfacility, receivingfacility):
     # Encode content to Base64
     encoded_message = base64.b64encode(message.encode()).decode()
 
+    # generate a GUID
+    guid = str(uuid.uuid4())
+
     # Create a JSON object with the parameters
     content = json.dumps({
+        'id': guid,
         'content': encoded_message,
         'sending_facility': sendingfacility,
         'receiving_facility': receivingfacility
     })
        
     # Insert message into the database with PENDING status
-    insertMessage(sendingfacility, receivingfacility, content, 'PENDING')
+    insertMessage(guid, sendingfacility, receivingfacility, content, 'PENDING')
     print(f"Message inserted from {sendingfacility}!")
 
 def handle_client(connection, address, sendingfacility, receivingfacility):
@@ -30,7 +34,7 @@ def handle_client(connection, address, sendingfacility, receivingfacility):
     with connection:
         print(f"Client connected from {address}")
         while True:
-            data = connection.recv(1024).decode()
+            data = connection.recv(4096).decode()
             if not data:
                 break
 

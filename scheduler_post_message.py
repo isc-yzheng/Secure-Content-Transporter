@@ -2,7 +2,7 @@ import sched
 import time
 import requests
 from utils import load_config, construct_url
-from models import updateMessage, dequeueMessage, Status
+from models import updateMessage, dequeueMessages, Status
 from datetime import datetime
 import json
 import sys
@@ -23,20 +23,21 @@ SCHEDULER_INTERVAL = config["Schedulers"]["PostMessage"]["interval"]
 def check_queued_message():
     print("Dequeueing and Posting Message...")
 
-    # Getting JSON content from the message queue
-    message = dequeueMessage([Status.PENDING, Status.RETRY])
-    if not message:
+    # Getting a snapshot of pending/retry messages from the message queue for processing
+    messages = dequeueMessages([Status.PENDING, Status.RETRY], 10)
+    if not messages:
         print("No message in the queue.")
         return
     
-    # Check status of the dequeued message
-    status = Status[message["status"]]
+    for message in messages:
+        # Check status of the dequeued message
+        status = Status[message["status"]]
 
-    if status in [Status.PENDING, Status.RETRY]:
-        # Send the message to the target postContent REST endpoint
-        post_message(message)
-    else:
-        print(f"Unhandled message status: {status}")
+        if status in [Status.PENDING, Status.RETRY]:
+            # Send the message to the target postContent REST endpoint
+            post_message(message)
+        else:
+            print(f"Unhandled message status: {status}")
 
 # Send the content from message to the target REST API using the postContent method
 def post_message(message):

@@ -28,6 +28,7 @@ class MessageQueue(Base):
     __tablename__ = "message_queue"
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    guid: Mapped[str] = mapped_column(String(200), nullable=False)
     sending_facility: Mapped[str] = mapped_column(String(100), nullable=False)
     receiving_facility: Mapped[str] = mapped_column(String(100), nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
@@ -37,7 +38,7 @@ class MessageQueue(Base):
     status: Mapped[Status] = mapped_column(Enum(Status), nullable=False)
 
     def __repr__(self) -> str:
-        return f"MessageQueue(id={self.id!r}, sending_facility={self.sending_facility!r}, receiving_facility={self.receiving_facility!r}, content={self.content!r}, created_at={self.created_at!r}, updated_at={self.updated_at!r}, delivered_at={self.delivered_at!r}, status={self.status!r})"
+        return f"MessageQueue(id={self.id!r}, guid={self.guid!r}, sending_facility={self.sending_facility!r}, receiving_facility={self.receiving_facility!r}, content={self.content!r}, created_at={self.created_at!r}, updated_at={self.updated_at!r}, delivered_at={self.delivered_at!r}, status={self.status!r})"
 
 """
 functions
@@ -48,13 +49,14 @@ def createTables():
 
 # function to insert a new message
 # Parameters:
-#   1. sending_facility - str
-#   2. receiving_facility - str
-#   3. content - str: A JSON string that containing 3 fields e.g., {"sending_facility":"AUXXREFSCR", "receiving_facility": "DIDGUGO", "content":"XXXX"}
-#   4. status - str: One of the following: PENDING, RETRY, DELIVERED, RECEIVED, COMPLETED
-def insertMessage(sending_facility, receiving_facility, content, status):
+#   1. guid - str
+#   2. sending_facility - str
+#   3. receiving_facility - str
+#   4. content - str: A JSON string that containing 3 fields e.g., {"sending_facility":"AUXXREFSCR", "receiving_facility": "DIDGUGO", "content":"XXXX"}
+#   5. status - str: One of the following: PENDING, RETRY, DELIVERED, RECEIVED, COMPLETED
+def insertMessage(guid, sending_facility, receiving_facility, content, status):
     try:
-        new_message = MessageQueue(sending_facility=sending_facility, receiving_facility=receiving_facility, content=content, status=status)
+        new_message = MessageQueue(guid=guid, sending_facility=sending_facility, receiving_facility=receiving_facility, content=content, status=status)
         session = Session(engine)
         session.add(new_message)
         session.flush()
@@ -121,6 +123,7 @@ def dequeueMessage(target_status: List[Status]) -> Optional[Dict[str, any]]:
             # Convert the message object to a dictionary
             return {
                 "id": message.id,
+                "guid": message.guid,
                 "sending_facility": message.sending_facility,
                 "receiving_facility": message.receiving_facility,
                 "content": message.content,
@@ -131,6 +134,46 @@ def dequeueMessage(target_status: List[Status]) -> Optional[Dict[str, any]]:
             }
         # Return None if no message is found
         return None
+    
+    except Exception as error:
+        print("An exception occurred: ", error)
+        return None
+    
+    finally:
+        session.close() # This will always execute
+
+# fuction to query the top 1 message in ascending order of created_at with a status equal to "PENDING" or "RETRY"
+# Parameters:
+#   1. target_status - List of Status(enum): a list of Status value that the messages will be dequeued from
+#   2. numOfMessages - int: number of messages dequeued from target status
+def dequeueMessages(target_status: List[Status], numOfMessages: int) -> Optional[Dict[str, any]]:
+    try:
+        session = Session(engine)
+
+        # Create a select statement for the top message based on conditions
+        stmt = (select(MessageQueue)
+                .where(MessageQueue.status.in_(target_status))
+                .order_by(MessageQueue.created_at.asc())
+                .limit(numOfMessages)) # Limit to the first result
+        # Execute the statement
+        messages = session.scalars(stmt).all()
+
+        # Convert the result into a list of dictionaries
+        result = []
+        for message in messages:
+            result.append({
+                'id': message.id,
+                'guid': message.guid,
+                'sending_facility': message.sending_facility,
+                'receiving_facility': message.receiving_facility,
+                'content': message.content,
+                'created_at': message.created_at,
+                'updated_at': message.updated_at,
+                'delivered_at': message.delivered_at,
+                'status': message.status.name  # convert enum to string
+            })
+        
+        return result
     
     except Exception as error:
         print("An exception occurred: ", error)
@@ -160,6 +203,7 @@ def getUnprocessedMessages(numOfMessages: int) -> List[Dict]:
         for message in messages:
             result.append({
                 'id': message.id,
+                'guid': message.guid,
                 'sending_facility': message.sending_facility,
                 'receiving_facility': message.receiving_facility,
                 'content': message.content,

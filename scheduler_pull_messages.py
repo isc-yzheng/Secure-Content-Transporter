@@ -38,12 +38,13 @@ def pull_messages():
         if response.status_code == 200:
             messages = response_data.get("contents", [])
             for message in messages:
+                guid = message["id"]
                 sending_facility = message["sending_facility"]
                 receiving_facility = message["receiving_facility"]
                 content = message["content"]
 
                 # Insert each message into the message_queue table with status "RECEIVED"
-                insertMessage(sending_facility, receiving_facility, content, Status.RECEIVED.name)
+                insertMessage(guid, sending_facility, receiving_facility, content, Status.RECEIVED.name)
             
             print(f"Inserted {len(messages)} messages into the database.")
         else:

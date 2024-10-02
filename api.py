@@ -13,11 +13,13 @@ NUM_OF_MESSAGES = config['RESTService']['Methods']['GetContents']['Number']  # n
 def get_contents():
     messages = getUnprocessedMessages(NUM_OF_MESSAGES)
 
+    contents = []
     # Mark fetched messages as DELIVERED
     for message in messages:
         updateMessage(message['id'], {'status': 'DELIVERED'})  # Update the status in the DB
+        contents.append(message['content'])
 
-    return jsonify({"contents": messages, "size": len(messages)}), 200
+    return jsonify({"contents": contents, "size": len(contents)}), 200
 
 @app.route('/postcontents', methods=['POST'])
 def post_contents():
@@ -32,16 +34,17 @@ def post_contents():
         return jsonify({"status": "Fail", "error": "'size' must be an integer"}), 400
 
     for item in messages:
+        guid = item.get('id')
         sending_facility = item.get('sending_facility')
         receiving_facility = item.get('receiving_facility')
         content = item.get('content')
 
         # Validate individual message payload
-        if not all([sending_facility, receiving_facility, content]):
+        if not all([guid, sending_facility, receiving_facility, content]):
             return jsonify({"status": "Fail", "error": "Missing parameters in one of the messages"}), 400
         
         # Insert each message with status "RECEIVED"
-        insertMessage(sending_facility, receiving_facility, content, status="RECEIVED")
+        insertMessage(guid, sending_facility, receiving_facility, content, status="RECEIVED")
 
     return jsonify({"status": "Success"}), 201
 
