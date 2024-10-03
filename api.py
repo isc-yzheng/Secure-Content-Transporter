@@ -37,7 +37,7 @@ def post_contents():
         guid = item.get('id')
         sending_facility = item.get('sending_facility')
         receiving_facility = item.get('receiving_facility')
-        content = str(item)
+        content = json.dumps(item)
 
         # Validate individual message payload
         if not all([guid, sending_facility, receiving_facility, content]):
