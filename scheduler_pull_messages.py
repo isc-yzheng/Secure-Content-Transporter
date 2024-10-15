@@ -4,6 +4,7 @@ from utils import load_config, construct_url
 import requests
 from models import insertMessage, Status
 import sys
+import json
 
 # Create a scheduler instance
 scheduler = sched.scheduler(time.time, time.sleep)
@@ -34,17 +35,17 @@ def pull_messages():
         # Send the GET request
         response = requests.get(url, headers=headers)
         response_data = response.json()
-
         if response.status_code == 200:
             messages = response_data.get("contents", [])
-            for message in messages:
+
+            for message_str in messages:
+                message = json.loads(message_str)
                 guid = message["id"]
                 sending_facility = message["sending_facility"]
                 receiving_facility = message["receiving_facility"]
-                content = message["content"]
-
+                
                 # Insert each message into the message_queue table with status "RECEIVED"
-                insertMessage(guid, sending_facility, receiving_facility, content, Status.RECEIVED.name)
+                insertMessage(guid, sending_facility, receiving_facility, message_str, Status.RECEIVED.name)
             
             print(f"Inserted {len(messages)} messages into the database.")
         else:
